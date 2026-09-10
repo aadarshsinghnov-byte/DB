@@ -11,7 +11,44 @@
         .gallery img { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
+<body><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegraph Image Host</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; text-align: center; background: #f4f4f9; }
+        form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); display: inline-block; margin-top: 20px; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 30px; }
+        .gallery img { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
+    </style>
+</head>
 <body>
+
+    <h2>Upload Photo via Telegra.ph</h2>
+    
+    <!-- Yeh form photo upload karne ke liye hai -->
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="photo" accept="image/*" required><br><br>
+        <button type="submit">Upload Photo</button>
+    </form>
+
+    <h3>Gallery</h3>
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+        async function loadGallery() {
+            const res = await fetch('/photos');
+            const photos = await res.json();
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = photos.map(p => `<img src="${p.url}" alt="Uploaded Photo">`).join('');
+        }
+        loadGallery();
+    </script>
+
+</body>
+</html>
 
     <h2>Upload Photo via Telegra.ph</h2>
     <form action="/upload" method="POST" enctype="multipart/form-data">
