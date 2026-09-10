@@ -8,8 +8,8 @@ const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // --- PASTE YOUR TELEGRAM BOT CREDENTIALS HERE ---
-const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
-const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID_HERE';
+const TELEGRAM_BOT_TOKEN = '8137112760:AAEwu1ryrY7AbSF_CFUy04W_L_XIi8WGL2o';
+const TELEGRAM_CHAT_ID = '8678383607';
 // ----------------------------------------------
 
 // Initialize local SQLite database
