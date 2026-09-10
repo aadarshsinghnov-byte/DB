@@ -1,0 +1,68 @@
+const express = require('express');
+const multer = require('multer');
+const axios = require('axios');
+const FormData = require('form-data');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+
+const app = express();
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Initialize local SQLite database to save image metadata
+const db = new sqlite3.Database('./images.db', (err) => {
+    if (err) console.error('Database opening error: ', err.message);
+});
+
+db.run(`CREATE TABLE IF NOT EXISTS photos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+app.use(express.static('public'));
+
+// Upload Route
+app.post('/upload', upload.single('photo'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).send('No file uploaded.');
+
+        // Prepare form data for Telegra.ph
+        const form = new FormData();
+        form.append('file', req.file.buffer, {
+            filename: req.file.originalname,
+            contentType: req.file.mimetype,
+        });
+
+        // Send request to Telegra.ph upload endpoint
+        const telegraphResponse = await axios.post('https://telegra.ph/upload', form, {
+            headers: form.getHeaders(),
+        });
+
+        if (telegraphResponse.data && telegraphResponse.data[0] && telegraphResponse.data[0].src) {
+            const imagePath = `https://telegra.ph${telegraphResponse.data[0].src}`;
+
+            // Save URL into SQLite database
+            db.run(`INSERT INTO photos (url) VALUES (?)`, [imagePath], (err) => {
+                if (err) return res.status(500).send('Database error.');
+                res.redirect('/');
+            });
+        } else {
+            res.status(500).send('Failed to upload image to Telegra.ph.');
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error during upload.');
+    }
+});
+
+// Fetch Gallery Route
+app.get('/photos', (req, res) => {
+    db.all(`SELECT * FROM photos ORDER BY id DESC`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Server running on http://localhost:3000');
+});
